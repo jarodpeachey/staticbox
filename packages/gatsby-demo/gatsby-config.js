@@ -1,14 +1,15 @@
 module.exports = {
   siteMetadata: {
     title: 'Gatsby Default Starter',
-    description: 'Kick off your next, great Gatsby project with this default starter. This barebones starter ships with the main Gatsby configuration files you might need.',
+    description:
+      'Kick off your next, great Gatsby project with this default starter. This barebones starter ships with the main Gatsby configuration files you might need.',
     author: '@gatsbyjs',
   },
   plugins: [
     {
       resolve: 'gatsby-plugin-triangle-comments',
       options: {
-        apiKey: 'fnEDsJHO2IACEgOrb15ToAITWP2IyMStbZHz0fAqRtgKexHoDNU',
+        apiKey: 'fnEDsK__MZACEgOrb15ToAITazJD2sIDLGzB3TfNFESxGVUKdPM',
         color: 'tomato',
       },
     },

@@ -44,9 +44,20 @@ exports.sourceNodes = async (
     // input.netlify_id = input.id;
     // input.id = createNodeId(`gatsby-source-netlify-${input.netlify_id}`);
     // console.log(input);
+    createNode({
+      name: 'Test',
+      id: 'sdfksdf',
+      children: [],
+      internal: {
+        type: 'Test',
+      },
+      parent: null,
+    });
 
     const nodeMeta = {
-      id: `comment-${input.data.date}`,
+      id: input.data.id,
+      parent: null,
+      children: [],
       internal: {
         type: `Staticbox${name}`,
       },

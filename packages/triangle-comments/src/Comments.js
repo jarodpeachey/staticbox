@@ -15,11 +15,19 @@ function encode(data) {
 
 const QUERY = gql`
   {
-    allComments {
+    allStaticboxComments {
       edges {
         node {
-          comment
-          name
+          id
+          data {
+            comment
+            date
+            draft
+            name
+            path
+            parentComment
+            id
+          }
         }
       }
     }
@@ -54,8 +62,21 @@ export const Comments = () => {
   const [state, setState] = React.useState({});
   const [parentCommentNumber, setParentCommentNumber] = React.useState(0);
   const [stateComments, setStateComments] = React.useState(
-    loading ? [] : data.edges
+    loading ? [] : Object.values(data)[0].edges
   );
+
+  useEffect(() => {
+    if (data) {
+      const comments = Object.values(data)[0].edges;
+      if (stateComments.length === 0 && comments.length > 0) {
+        console.log(Object.values(data)[0]);
+
+        setStateComments(comments);
+      }
+
+      // console.log(data.allStaticboxComments);
+    }
+  }, [data]);
 
   // const { apiKey } = window.triangle;
 
@@ -96,11 +117,7 @@ export const Comments = () => {
   console.log(
     'First level comments: ',
     stateComments
-      .filter((comment) =>
-        comment.node
-          ? comment.node.data.parentCommentNumber === 'undefined'
-          : comment.data.parentCommentNumber === 'undefined'
-      )
+      .filter((comment) => !comment.node.data.parentCommentNumber)
       .sort((a, b) =>
         a.node ? a.node.number - b.node.number : a.number - b.number
       )
@@ -108,11 +125,7 @@ export const Comments = () => {
   console.log(
     'Replies: ',
     stateComments
-      .filter((comment) =>
-        comment.node
-          ? comment.node.data.parentCommentNumber !== 'undefined'
-          : comment.data.parentCommentNumber !== 'undefined'
-      )
+      .filter((comment) => comment.node.data.parentCommentNumber)
       .sort((a, b) =>
         a.node ? a.node.number - b.node.number : a.number - b.number
       )
@@ -198,11 +211,7 @@ export const Comments = () => {
   return (
     <>
       {stateComments
-        .filter((comment) =>
-          comment.node
-            ? comment.node.data.parentCommentNumber === 'undefined'
-            : comment.data.parentCommentNumber === 'undefined'
-        )
+        .filter((comment) => !comment.node.data.parentCommentNumber)
         .sort((a, b) =>
           a.node ? a.node.number - b.node.number : a.number - b.number
         ).length > 0 && (
@@ -210,11 +219,7 @@ export const Comments = () => {
           <h2 className='title center-text'>Comments</h2>
           <CommentsSection>
             {stateComments
-              .filter((comment) =>
-                comment.node
-                  ? comment.node.data.parentCommentNumber === 'undefined'
-                  : comment.data.parentCommentNumber === 'undefined'
-              )
+              .filter((comment) => !comment.node.data.parentCommentNumber)
               .sort((a, b) =>
                 a.node ? a.node.number - b.node.number : a.number - b.number
               )
@@ -266,11 +271,8 @@ export const Comments = () => {
                         </span>
                       </CommentFooter>
                       {stateComments
-                        .filter((comment) =>
-                          comment.node
-                            ? comment.node.data.parentCommentNumber !==
-                              'undefined'
-                            : comment.data.parentCommentNumber !== 'undefined'
+                        .filter(
+                          (comment) => comment.node.data.parentCommentNumber
                         )
                         .sort((a, b) =>
                           a.node
