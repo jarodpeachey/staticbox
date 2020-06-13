@@ -9,7 +9,8 @@ module.exports = {
     {
       resolve: 'gatsby-plugin-triangle-comments',
       options: {
-        apiKey: 'fnEDsK__MZACEgOrb15ToAITazJD2sIDLGzB3TfNFESxGVUKdPM',
+        apiKey: 'fnEDsS38aiACFAOrb15ToAIT0Z5FbHXOAeASHVRc1lesXmcpf7I',
+        siteId: 'jarods-site',
         color: 'tomato',
       },
     },

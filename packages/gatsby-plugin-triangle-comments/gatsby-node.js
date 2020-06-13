@@ -3,39 +3,24 @@
  *
  * See: https://www.gatsbyjs.org/docs/node-apis/
  */
-
 require('dotenv').config({
   path: `.env.${process.env.NODE_ENV}`,
 });
-const faunadb = require('faunadb');
-const q = faunadb.query;
-
-// import faunadb, { query as q } from 'faunadb';
-
-// const fetch = require('node-fetch');
+const fetch = require('node-fetch');
 
 exports.sourceNodes = async (
   { actions, createNodeId, createContentDigest, reporter },
   options
 ) => {
   const { createNode } = actions;
-
-  createNode({
-    name: 'Jarod',
-    id: 'sdyfy98',
-    internal: {
-      type: 'Test',
-    },
-  });
-
-  const { color, apiKey } = options;
-
-  const faunaClient = new faunadb.Client({
-    secret: apiKey,
-  });
+  const { color, apiKey, siteId } = options;
 
   if (!apiKey) {
     reporter.panicOnBuild('Please define a Staticbox API key');
+  }
+
+  if (!siteId) {
+    reporter.panicOnBuild('Please define a Staticbox site id');
   }
 
   // const client = new NetlifyAPI(apiKey, opts);
@@ -44,15 +29,6 @@ exports.sourceNodes = async (
     // input.netlify_id = input.id;
     // input.id = createNodeId(`gatsby-source-netlify-${input.netlify_id}`);
     // console.log(input);
-    createNode({
-      name: 'Test',
-      id: 'sdfksdf',
-      children: [],
-      internal: {
-        type: 'Test',
-      },
-      parent: null,
-    });
 
     const nodeMeta = {
       id: input.data.id,
@@ -71,30 +47,21 @@ exports.sourceNodes = async (
   };
 
   try {
-    faunaClient
-      .query(
-        q.Map(
-          q.Paginate(q.Match(q.Index('all_comments')), { size: 10000 }),
-          q.Lambda(
-            'commentsRef',
-            q.Let(
-              {
-                comments: q.Get(q.Var('commentsRef')),
-              },
-              {
-                ref: q.Select(['ref'], q.Var('comments')),
-                data: q.Select(['data'], q.Var('comments')),
-              }
-            )
-          )
-        )
-      )
-      .then((res) => {
-        console.log(res.data);
-        res.data.forEach((submission) => {
+    fetch(`https://api.staticbox.io/api/sites/${siteId}/comments`, {
+      headers: {
+        'Content-Type': 'application/json',
+        key: `${apiKey}`,
+      },
+    }).then((res) => {
+      console.log(res);
+      // reporter.panicOnBuild('Comments: ', res);
+      res.json().then((json) => {
+        console.log(json);
+        json.data.forEach((submission) => {
           nodeHelper(submission, 'Comments');
         });
       });
+    });
   } catch (e) {
     console.error(e);
     process.exit(1);

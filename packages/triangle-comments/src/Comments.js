@@ -62,7 +62,7 @@ export const Comments = () => {
   const [state, setState] = React.useState({});
   const [parentCommentNumber, setParentCommentNumber] = React.useState(0);
   const [stateComments, setStateComments] = React.useState(
-    loading ? [] : Object.values(data)[0].edges
+    loading ? [] : data && data.length ? Object.values(data)[0].edges : []
   );
 
   useEffect(() => {
