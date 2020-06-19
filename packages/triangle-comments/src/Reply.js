@@ -60,82 +60,87 @@ const Reply = ({ comment, buttonStyles, inputStyles, colors }) => {
   };
 
   return (
-    <Wrapper gray>
-      <CommentTitle>{comment.node.data.name}</CommentTitle>
-      <CommentDate>{formatDate(comment.node.data.date)}</CommentDate>
-      <CommentBody>{comment.node.data.comment}</CommentBody>
-      <CommentFooter>
-        <span style={{ cursor: 'pointer' }} onClick={handleReplyOpen}>
-          {formOpen ? 'Reply' : 'Reply'}
-        </span>
-      </CommentFooter>
-      {formOpen && (
-        <form
-          style={{ margin: 0 }}
-          method='post'
-          id='form'
-          onSubmit={handleSubmit}
-        >
-          <div className='custom-row'>
-            <div className='custom-col custom-col-12'>
-              <Input
-                customCSS={inputStyles.customCSS}
-                fontSize={inputStyles.fontSize}
-                color={colors.primary}
-                padding={{
-                  vertical: inputStyles.paddingY,
-                  horizontal: inputStyles.paddingX,
-                }}
-                onChange={handleNameChange}
-                type='text'
-                name='name'
-                id='name'
-                placeholder='Name'
-                value={name}
-              />
+    <Container>
+      <Wrapper gray>
+        <CommentTitle>{comment.node.data.name}</CommentTitle>
+        <CommentDate>{formatDate(comment.node.data.date)}</CommentDate>
+        <CommentBody>{comment.node.data.comment}</CommentBody>
+        <CommentFooter>
+          <span style={{ cursor: 'pointer' }} onClick={handleReplyOpen}>
+            {formOpen ? 'Reply' : 'Reply'}
+          </span>
+        </CommentFooter>
+        {formOpen && (
+          <form
+            style={{ margin: 0 }}
+            method='post'
+            id='form'
+            onSubmit={handleSubmit}
+          >
+            <div className='custom-row'>
+              <div className='custom-col custom-col-12'>
+                <Input
+                  customCSS={inputStyles.customCSS}
+                  fontSize={inputStyles.fontSize}
+                  color={colors.primary}
+                  padding={{
+                    vertical: inputStyles.paddingY,
+                    horizontal: inputStyles.paddingX,
+                  }}
+                  onChange={handleNameChange}
+                  type='text'
+                  name='name'
+                  id='name'
+                  placeholder='Name'
+                  value={name}
+                />
+              </div>
+              <div className='custom-col custom-col-12'>
+                <TextArea
+                  customCSS={inputStyles.customCSS}
+                  fontSize={inputStyles.fontSize}
+                  color={colors.primary}
+                  padding={{
+                    vertical: inputStyles.paddingY,
+                    horizontal: inputStyles.paddingX,
+                  }}
+                  onChange={handleReplyChange}
+                  name='comment'
+                  id='comment'
+                  placeholder='Comment'
+                  value={reply}
+                ></TextArea>
+              </div>
+              <div className='custom-col custom-col-12'>
+                <Button
+                  customCSS={buttonStyles.customCSS}
+                  background={colors.primary}
+                  name='button'
+                >
+                  Reply
+                </Button>
+              </div>
             </div>
-            <div className='custom-col custom-col-12'>
-              <TextArea
-                customCSS={inputStyles.customCSS}
-                fontSize={inputStyles.fontSize}
-                color={colors.primary}
-                padding={{
-                  vertical: inputStyles.paddingY,
-                  horizontal: inputStyles.paddingX,
-                }}
-                onChange={handleReplyChange}
-                name='comment'
-                id='comment'
-                placeholder='Comment'
-                value={reply}
-              ></TextArea>
-            </div>
-            <div className='custom-col custom-col-12'>
-              <Button
-                customCSS={buttonStyles.customCSS}
-                background={colors.primary}
-                name='button'
-              >
-                Reply
-              </Button>
-            </div>
-          </div>
-        </form>
-      )}
-    </Wrapper>
+          </form>
+        )}
+      </Wrapper>
+    </Container>
   );
 };
 
+const Container = styled.div`
+  // padding-left: 58px;
+`;
 const Wrapper = styled.div`
   padding: 14px;
-  border: 1px solid #efefef;
+  border: 1px solid #dfdfdf;
   border-radius: 3px;
   font-size: 16px;
   background: white;
   outline: none;
   width: 100%;
   margin: 12px 0;
-  background: ${(props) => (props.gray ? '#efefef' : 'white')};
+  background: ${(props) => (props.gray ? 'white' : 'white')};
 `;
 
 const CommentTitle = styled.h3`

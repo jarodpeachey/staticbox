@@ -47,6 +47,7 @@ export const Form = () => {
   const { faunaClient, q, color } = window.triangle;
   const [name, setName] = useState('');
   const [comment, setComment] = useState('');
+  const [notification, setNotification] = useState('success');
 
   const { loading, error, data } = useQuery(QUERY);
 
@@ -136,8 +137,24 @@ export const Form = () => {
           }
         )
       )
-      .then((response) => console.log(response))
-      .catch((error) => console.log(error));
+      .then((response) => {
+        setName('');
+        setComment('');
+        console.log(response);
+        setNotification('success');
+        setTimeout(() => {
+          setNotification(false);
+        }, 750);
+      })
+      .catch((error) => {
+        setName('');
+        setComment('');
+        console.log(error);
+        setNotification('success');
+        setTimeout(() => {
+          setNotification(false);
+        }, 750);
+      });
   };
 
   return (
@@ -203,6 +220,13 @@ export const Form = () => {
           </div>
         </div>
       </form>
+      {notification && (
+        <NotificationWrapper>
+          <Notification notification={notification}>
+            {notification === 'success' ? 'Success!' : 'There was an error.'}
+          </Notification>
+        </NotificationWrapper>
+      )}
     </div>
   );
 };
@@ -218,6 +242,25 @@ const Label = styled.label`
     `}
 `;
 
+const NotificationWrapper = styled.div`
+  position: fixed;
+  width: 100%;
+  height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  bottom: 0;
+  left: 0;
+`;
+
+const Notification = styled.div`
+  padding: 12px 24px;
+  background: ${(props) =>
+    props.notification === 'success' ? '#00ab66' : '#ff6347'};
+  color: white;
+  border-radius: 3px;
+`;
+
 const Input = styled.input`
   padding-top: ${(props) => props.padding.vertical}px;
   padding-right: ${(props) => props.padding.horizontal}px;
@@ -225,8 +268,12 @@ const Input = styled.input`
   padding-bottom: ${(props) => props.padding.vertical}px;
   margin: 0;
   width: 100%;
-  border: 1px solid #e8e8e8;
+  border: 1px solid #dfdfdf;
   border-radius: 5px;
+  transition-duration: 0.15s;
+  :hover {
+    border: 1px solid ${(props) => props.color};
+  }
   :focus {
     outline: 1px ${(props) => props.color} auto;
   }
@@ -243,10 +290,14 @@ const TextArea = styled.textarea`
   padding-right: ${(props) => props.padding.horizontal}px;
   padding-left: ${(props) => props.padding.horizontal}px;
   padding-bottom: ${(props) => props.padding.vertical}px;
-  width: 100%;
   font-size: ${(props) => props.fontSize}px !important;
   margin: 0;
-  border: 1px solid #e8e8e8;
+  width: 100%;
+  transition-duration: 0.15s;
+  :hover {
+    border: 1px solid ${(props) => props.color};
+  }
+  border: 1px solid #dfdfdf;
   border-radius: 5px;
   min-height: 200px;
   :focus {
