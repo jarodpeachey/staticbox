@@ -10,9 +10,6 @@ import { Comments } from '../../../triangle-comments/src/Comments';
 const IndexPage = () => (
   <Layout>
     <SEO title='Home' />
-    <h1>Hi people</h1>
-    <p>Welcome to your new Gatsby site.</p>
-    <p>Now go build something great.</p>
     <Form />
     <Comments />
   </Layout>

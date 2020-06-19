@@ -1,10 +1,12 @@
 /* eslint-disable import/prefer-default-export */
-import React, { useState, useContext, useEffect } from 'react';
+/* eslint-disable react/jsx-fragments */
+import React, { useState, useEffect } from 'react';
 import styled, { css } from 'styled-components';
-import './css/style.css';
+import { formatDate } from './utils/formatDate';
 import { useStaticQuery, graphql } from 'gatsby';
 import { useQuery } from '@apollo/react-hooks';
 import { gql } from 'apollo-boost';
+import Reply from './Reply';
 
 function encode(data) {
   return Object.keys(data)
@@ -43,10 +45,11 @@ const QUERY = gql`
   }
 `;
 
-export const Form = () => {
-  const { faunaClient, q, color } = window.triangle;
+const Comment = ({ comment, children, replies }) => {
+  const { faunaClient, q } = window.triangle;
+  const [formOpen, setFormOpen] = useState(false);
   const [name, setName] = useState('');
-  const [comment, setComment] = useState('');
+  const [reply, setReply] = useState('');
 
   const { loading, error, data } = useQuery(QUERY);
 
@@ -73,8 +76,6 @@ export const Form = () => {
     customCSS: 'margin: 0;',
   });
 
-  const path = typeof window !== 'undefined' ? window.location.pathname : '/';
-
   useEffect(() => {
     if (data) {
       console.log('Styles: ', data.allStaticboxStyles);
@@ -94,17 +95,24 @@ export const Form = () => {
     }
   }, [data]);
 
+  console.log(replies);
+
+  const path = typeof window !== 'undefined' ? window.location.pathname : '/';
+
   const handleNameChange = (e) => {
     setName(e.target.value);
   };
 
-  const handleCommentChange = (e) => {
-    setComment(e.target.value);
+  const handleReplyChange = (e) => {
+    setReply(e.target.value);
+  };
+
+  const handleReplyOpen = (e) => {
+    setFormOpen(!formOpen);
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-
     console.log('Triangle: ', window.triangle);
 
     faunaClient
@@ -123,13 +131,13 @@ export const Form = () => {
               q.Function('create_comment'),
               `comment-${new Date().getTime()}`,
               name,
-              comment,
+              reply,
               new Date().getTime(),
               path,
               false,
               q.Var('userRef'),
               q.Var('siteRef'),
-              ''
+              comment.node.data.id
             ),
             siteRef: q.Var('siteRef'),
             userRef: q.Var('userRef'),
@@ -141,71 +149,114 @@ export const Form = () => {
   };
 
   return (
-    <div className='wrapper'>
-      <h2>Add A Comment</h2>
-      <form method='post' id='form' onSubmit={handleSubmit}>
-        <div className='custom-row'>
-          <div className='custom-col custom-col-12'>
-            <Label
-              customCSS={labelStyles.customCSS}
-              fontSize={labelStyles.fontSize}
-              htmlFor='name'
-            >
-              Name
-            </Label>
-            <Input
-              customCSS={inputStyles.customCSS}
-              fontSize={inputStyles.fontSize}
-              color={colors.primary}
-              padding={{
-                vertical: inputStyles.paddingY,
-                horizontal: inputStyles.paddingX,
-              }}
-              onChange={handleNameChange}
-              type='text'
-              name='name'
-              id='name'
-              value={name}
-            />
+    <Wrapper>
+      <CommentTitle>{comment.node.data.name}</CommentTitle>
+      <CommentDate>{formatDate(comment.node.data.date)}</CommentDate>
+      <CommentBody>{comment.node.data.comment}</CommentBody>
+      <CommentFooter>
+        <span style={{ cursor: 'pointer' }} onClick={handleReplyOpen}>
+          {formOpen ? 'Cancel' : 'Reply'}
+        </span>
+      </CommentFooter>
+      {formOpen && (
+        <form
+          method='post'
+          id='form'
+          onSubmit={handleSubmit}
+          style={{ marginTop: 12, padding: 16, background: '#efefef' }}
+        >
+          <div className='custom-row'>
+            <div className='custom-col custom-col-12'>
+              <Input
+                customCSS={inputStyles.customCSS}
+                fontSize={inputStyles.fontSize}
+                color={colors.primary}
+                padding={{
+                  vertical: inputStyles.paddingY,
+                  horizontal: inputStyles.paddingX,
+                }}
+                onChange={handleNameChange}
+                type='text'
+                name='name'
+                id='name'
+                placeholder='Name'
+                value={name}
+              />
+            </div>
+            <div className='custom-col custom-col-12'>
+              <TextArea
+                customCSS={inputStyles.customCSS}
+                fontSize={inputStyles.fontSize}
+                color={colors.primary}
+                padding={{
+                  vertical: inputStyles.paddingY,
+                  horizontal: inputStyles.paddingX,
+                }}
+                onChange={handleReplyChange}
+                name='comment'
+                id='comment'
+                placeholder='Comment'
+                value={reply}
+              ></TextArea>
+            </div>
+            <div className='custom-col custom-col-12'>
+              <Button
+                customCSS={buttonStyles.customCSS}
+                background={colors.primary}
+                name='button'
+              >
+                Reply
+              </Button>
+            </div>
           </div>
-          <div className='custom-col custom-col-12'>
-            <Label
-              customCSS={labelStyles.customCSS}
-              fontSize={labelStyles.fontSize}
-              htmlFor='comment'
-            >
-              Comment
-            </Label>
-            <TextArea
-              customCSS={inputStyles.customCSS}
-              fontSize={inputStyles.fontSize}
-              color={colors.primary}
-              padding={{
-                vertical: inputStyles.paddingY,
-                horizontal: inputStyles.paddingX,
-              }}
-              onChange={handleCommentChange}
-              name='comment'
-              id='comment'
-              value={comment}
-            ></TextArea>
-          </div>
-          <div className='custom-col custom-col-12'>
-            <Button
-              customCSS={buttonStyles.customCSS}
-              background={colors.primary}
-              color={color}
-              name='button'
-              type='submit'
-            >
-              Post your comment
-            </Button>
-          </div>
-        </div>
-      </form>
-    </div>
+        </form>
+      )}
+      {replies && replies.length > 0 && (
+        <>
+          {replies.map((replyComment) => {
+            return (
+              <Reply
+                colors={colors}
+                buttonStyles={buttonStyles}
+                inputStyles={inputStyles}
+                comment={replyComment}
+              />
+            );
+          })}
+        </>
+      )}
+    </Wrapper>
   );
 };
+
+export default Comment;
+
+const Wrapper = styled.div`
+  padding: 14px;
+  border: 1px solid #efefef;
+  border-radius: 3px;
+  font-size: 16px;
+  background: white;
+  outline: none;
+  width: 100%;
+  margin: 12px 0;
+  background: ${(props) => (props.gray ? '#efefef' : 'white')};
+`;
+
+const CommentTitle = styled.h3`
+  margin: 0;
+`;
+
+const CommentDate = styled.small`
+  display: block;
+  margin-bottom: 12px;
+`;
+
+const CommentBody = styled.p``;
+
+const CommentFooter = styled.div`
+  font-size: 14px;
+`;
 
 const Label = styled.label`
   margin-bottom: 8px;
@@ -248,7 +299,8 @@ const TextArea = styled.textarea`
   margin: 0;
   border: 1px solid #e8e8e8;
   border-radius: 5px;
-  min-height: 200px;
+  min-height: 150px;
+  resize: vertical;
   :focus {
     outline: 1px ${(props) => props.color} auto;
   }

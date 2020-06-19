@@ -12,26 +12,26 @@ export const TriangleContext = React.createContext({});
  */
 
 export class TriangleConstructor {
-  color = 'tomato';
-
   apiKey = '';
 
   faunaClient = null;
 
   q = null;
 
+  siteId = '';
+
   constructor(props) {
     console.log(props);
 
     this.apiKey = props.apiKey;
-    this.color = props.color;
     this.faunaClient = props.faunaClient;
     this.q = props.q;
+    this.siteId = props.siteId;
   }
 }
 
 export const Triangle = ({ options, children }) => {
-  const { apiKey, color } = options;
+  const { apiKey, siteId } = options;
 
   const faunaClient = new faunadb.Client({
     secret: apiKey,
@@ -39,11 +39,11 @@ export const Triangle = ({ options, children }) => {
 
   console.log(faunaClient);
 
-  window.triangle = new TriangleConstructor({apiKey, color, faunaClient, q});
+  window.triangle = new TriangleConstructor({ apiKey, faunaClient, q, siteId });
 
   const ctx = {
     apiKey,
-    color,
+    siteId,
     faunaClient,
     q,
   };

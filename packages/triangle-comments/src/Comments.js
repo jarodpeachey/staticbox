@@ -6,6 +6,7 @@ import { useStaticQuery, graphql } from 'gatsby';
 import { useQuery } from '@apollo/react-hooks';
 import { gql } from 'apollo-boost';
 import { formatDate } from './utils/formatDate';
+import Comment from './Comment';
 
 function encode(data) {
   return Object.keys(data)
@@ -18,15 +19,14 @@ const QUERY = gql`
     allStaticboxComments {
       edges {
         node {
-          id
           data {
             comment
             date
             draft
+            id
             name
             path
             parentComment
-            id
           }
         }
       }
@@ -40,13 +40,13 @@ export const Comments = () => {
   //     allNetlifySubmissions {
   //       edges {
   //         node {
-  //           number
+  //           id
   //           data {
   //             comment
   //             email
   //             name
   //             path
-  //             parentCommentNumber
+  //             parentCommentid
   //           }
   //           created_at(formatString: "M/D/YYYY")
   //         }
@@ -60,7 +60,6 @@ export const Comments = () => {
   console.log(loading, error, data);
 
   const [state, setState] = React.useState({});
-  const [parentCommentNumber, setParentCommentNumber] = React.useState(0);
   const [stateComments, setStateComments] = React.useState(
     loading ? [] : data && data.length ? Object.values(data)[0].edges : []
   );
@@ -117,23 +116,19 @@ export const Comments = () => {
   console.log(
     'First level comments: ',
     stateComments
-      .filter((comment) => !comment.node.data.parentCommentNumber)
-      .sort((a, b) =>
-        a.node ? a.node.number - b.node.number : a.number - b.number
-      )
+      .filter((comment) => comment.node.data.parentComment === '')
+      .sort((a, b) => (a.node ? a.node.date - b.node.date : a.date - b.date))
   );
   console.log(
     'Replies: ',
     stateComments
-      .filter((comment) => comment.node.data.parentCommentNumber)
-      .sort((a, b) =>
-        a.node ? a.node.number - b.node.number : a.number - b.number
-      )
+      .filter((comment) => comment.node.data.parentComment !== '')
+      .sort((a, b) => (a.node ? a.node.date - b.node.date : a.date - b.date))
   );
 
   const handleReplyOpen = (e) => {
-    const number = e.target.getAttribute('number');
-    setState({ ...state, parentCommentNumber: number });
+    const id = e.target.getAttribute('id');
+    setState({ ...state, parentCommentid: id });
     const newElement = document.createElement('div');
 
     newElement.innerHTML = `        <form
@@ -160,13 +155,13 @@ export const Comments = () => {
                 type='text'
                 value=${state.path}
               />
-              <label class=${HiddenLabel.__linaria.className} for='parentCommentNumber'>Parent Comment Number</label>
+              <label class=${HiddenLabel.__linaria.className} for='parentCommentid'>Parent Comment id</label>
               <input
                 class=${HiddenInput.__linaria.className}
-                name='parentCommentNumber'
-                id='parentCommentNumber'
+                name='parentCommentid'
+                id='parentCommentid'
                 type='text'
-                value=${number}
+                value=${id}
               />
               <label class=${HiddenLabel.__linaria.className}  for='name'>Name</label>
               <input class=${Input.__linaria.className}
@@ -211,126 +206,30 @@ export const Comments = () => {
   return (
     <>
       {stateComments
-        .filter((comment) => !comment.node.data.parentCommentNumber)
-        .sort((a, b) =>
-          a.node ? a.node.number - b.node.number : a.number - b.number
-        ).length > 0 && (
+        .filter((comment) => comment.node.data.parentComment === '')
+        .sort((a, b) => (a.node ? a.node.id - b.node.id : a.id - b.id)).length >
+        0 && (
         <>
           <h2 className='title center-text'>Comments</h2>
           <CommentsSection>
             {stateComments
-              .filter((comment) => !comment.node.data.parentCommentNumber)
-              .sort((a, b) =>
-                a.node ? a.node.number - b.node.number : a.number - b.number
-              )
-              .map((parentComment) => {
-                if (
-                  parentComment.node
-                    ? parentComment.node.data.name !== 'placeholder'
-                    : parentComment.data.name
-                ) {
-                  return (
-                    <Comment
-                      key={
-                        parentComment.node
-                          ? parentComment.node.data.name
-                          : parentComment.data.name
-                      }
-                    >
-                      <CommentName>
-                        {parentComment.node
-                          ? parentComment.node.data.name
-                          : parentComment.data.name}
-                      </CommentName>
-                      <CommentDate>
-                        on{' '}
-                        {parentComment.node
-                          ? parentComment.node.created_at
-                          : formatDate(parentComment.created_at)}
-                      </CommentDate>
-                      <p>
-                        {parentComment.node
-                          ? parentComment.node.data.comment
-                          : parentComment.data.comment}
-                      </p>
-                      <CommentFooter>
-                        <span
-                          number={
-                            parentComment.node
-                              ? parentComment.node.number
-                              : parentComment.number
-                          }
-                          name={`comment${
-                            parentComment.node
-                              ? parentComment.node.data.name
-                              : parentComment.data.name
-                          }`}
-                          onClick={handleReplyOpen}
-                        >
-                          Reply
-                        </span>
-                      </CommentFooter>
-                      {stateComments
-                        .filter(
-                          (comment) => comment.node.data.parentCommentNumber
-                        )
-                        .sort((a, b) =>
-                          a.node
-                            ? a.node.number - b.node.number
-                            : a.number - b.number
-                        )
-                        .map((reply) => {
-                          if (
-                            reply.node
-                              ? reply.node.data.parentCommentNumber ==
-                                parentComment.node.number
-                              : reply.data.parentCommentNumber ==
-                                parentComment.number
-                          ) {
-                            return (
-                              <GrayComment>
-                                <CommentName>
-                                  {reply.node
-                                    ? reply.node.data.name
-                                    : reply.data.name}
-                                </CommentName>
-                                <CommentDate>
-                                  on{' '}
-                                  {reply.node
-                                    ? reply.node.created_at
-                                    : formatDate(reply.created_at)}
-                                </CommentDate>
-                                <p>
-                                  {reply.node
-                                    ? reply.node.data.comment
-                                    : reply.data.comment}
-                                </p>
-                                <CommentFooter>
-                                  <span
-                                    number={
-                                      parentComment.node
-                                        ? parentComment.node.number
-                                        : parentComment.number
-                                    }
-                                    name={`reply${
-                                      reply.node
-                                        ? reply.node.data.name
-                                        : reply.data.name
-                                    }`}
-                                    onClick={handleReplyOpen}
-                                  >
-                                    Reply
-                                  </span>
-                                </CommentFooter>
-                              </GrayComment>
-                            );
-                          }
-
-                          return null;
-                        })}
-                    </Comment>
-                  );
-                }
+              .filter((comment) => comment.node.data.parentComment === '')
+              .sort((a, b) => (a.node ? a.node.id - b.node.id : a.id - b.id))
+              .map((comment) => {
+                return (
+                  <Comment
+                    comment={comment}
+                    replies={stateComments
+                      .filter(
+                        (replyComment) =>
+                          replyComment.node.data.parentComment ===
+                          comment.node.data.id
+                      )
+                      .sort((a, b) =>
+                        a.node ? a.node.id - b.node.id : a.id - b.id
+                      )}
+                  />
+                );
               })}
           </CommentsSection>
         </>
@@ -449,16 +348,6 @@ const Button = styled.button`
 
 const CommentsSection = styled.div``;
 
-const Comment = styled.div`
-  padding: 14px;
-  box-shadow: 1px 1px 3px 0px #e7e7e7;
-  font-size: 16px;
-  background: white;
-  outline: none;
-  width: 100%;
-  margin: 12px 0;
-`;
-
 const GrayComment = styled.div`
   padding: 14px;
   // box-shadow: 1px 1px 3px 0px #e7e7e7;
@@ -470,15 +359,6 @@ const GrayComment = styled.div`
   :last-child {
     margin-bottom: 0;
   }
-`;
-
-const CommentName = styled.h3`
-  margin: 0;
-`;
-
-const CommentDate = styled.small`
-  display: block;
-  margin-bottom: 12px;
 `;
 
 const CommentFooter = styled.div`

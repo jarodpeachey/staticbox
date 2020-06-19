@@ -13,7 +13,7 @@ exports.sourceNodes = async (
   options
 ) => {
   const { createNode } = actions;
-  const { color, apiKey, siteId } = options;
+  const { apiKey, siteId } = options;
 
   if (!apiKey) {
     reporter.panicOnBuild('Please define a Staticbox API key');
@@ -31,7 +31,7 @@ exports.sourceNodes = async (
     // console.log(input);
 
     const nodeMeta = {
-      id: input.data.id,
+      id: createNodeId(`staticbox-${input.data && input.data.id ? input.data.id : 'styles'}`),
       parent: null,
       children: [],
       internal: {
@@ -65,5 +65,22 @@ exports.sourceNodes = async (
   } catch (e) {
     console.error(e);
     process.exit(1);
+  }
+  try {
+    fetch(`https://api.staticbox.io/api/sites/${siteId}/styles`, {
+      headers: {
+        'Content-Type': 'application/json',
+        key: `${apiKey}`,
+      },
+    }).then((res) => {
+      console.log(res);
+      // reporter.panicOnBuild('Comments: ', res);
+      res.json().then((json) => {
+        console.log(json);
+        nodeHelper(json.data[0], 'Styles');
+      });
+    });
+  } catch (e) {
+    console.error(e);
   }
 };
